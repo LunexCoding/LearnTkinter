@@ -19,7 +19,7 @@ class App(tk.Tk):
             text="Show Date",
             width=20
         )
-        self.buttonDate['command'] = Operations.getDate
+        self.buttonDate['command'] = self._showDatetime
         self.buttonDate.pack()
 
         # Button Lst
@@ -67,13 +67,17 @@ class App(tk.Tk):
 
     def __showFrame(self):
         if not self.__frameExists:
-            self.__frame.pack(anchor=NW, fill=BOTH, padx=5, pady=5, expand=1)
             self.__setFrameExistsStatus(True)
+            self.__frame.pack(anchor=NW, fill=BOTH, padx=5, pady=5, expand=1)
 
-    def __hideFrame(self):
+    async def __hideFrame(self):
         if self.__frameExists:
             self.__frame.pack_forget()
             self.__setFrameExistsStatus(False)
+
+    def _showDatetime(self):
+        date = Operations.getDate()
+        self.__createLabel(date)
 
     def __openDialogInput(self, title, message):
         inputData = askstring(title, message)
@@ -106,9 +110,9 @@ class App(tk.Tk):
         self.__frameExists = True
 
     def __createLabel(self, text):
-        if self.__frameExists:
-            self.__deleteLabel()
-        label = tk.Label(self, text=text, font=('Aerial 18'))
+        if not self.__frameExists:
+            self.__showFrame()
+        label = tk.Label(self.__frame, text=text, font=('Aerial 18'))
         label.pack()
 
     def __deleteLabel(self):
