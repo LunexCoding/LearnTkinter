@@ -1,8 +1,13 @@
 import tkinter as tk
 from tkinter import ttk, SOLID, NW, BOTH
-from operations import Operations
 from tkinter.simpledialog import askstring
+from tkinter import messagebox
 
+from operations import Operations
+
+from helpers.fileSystemExceptions import (
+    PathExistsAsDirectoryException,
+)
 
 
 class App(tk.Tk):
@@ -10,7 +15,6 @@ class App(tk.Tk):
         super().__init__()
 
         self.__frame = ttk.Frame(borderwidth=1, relief=SOLID, padding=[8, 10])
-
         self.__frameExists = False
 
         # Buttons
@@ -35,7 +39,7 @@ class App(tk.Tk):
             text="Create Dir",
             width=20
         )
-        self.buttonCreateDir['command'] = Operations.createDir
+        self.buttonCreateDir['command'] = self._createDir
         self.buttonCreateDir.pack()
 
         # Button Touch (create empty file)
@@ -43,7 +47,7 @@ class App(tk.Tk):
             text="Touch",
             width=20
         )
-        self.buttonTouch['command'] = Operations.touch
+        self.buttonTouch['command'] = self._touch
         self.buttonTouch.pack()
 
         # Button Copy File
@@ -65,26 +69,40 @@ class App(tk.Tk):
     def __setFrameExistsStatus(self, status):
         self.__frameExists = status
 
-    def __showFrame(self):
+    def __createFrame(self):
         if not self.__frameExists:
-            self.__setFrameExistsStatus(True)
             self.__frame.pack(anchor=NW, fill=BOTH, padx=5, pady=5, expand=1)
+            self.__setFrameExistsStatus(True)
 
-    async def __hideFrame(self):
+    def __destroyFrame(self):
         if self.__frameExists:
-            self.__frame.pack_forget()
+            for widget in self.__frame.winfo_children():
+                widget.destroy()
+            print("rem")
             self.__setFrameExistsStatus(False)
-
-    def _showDatetime(self):
-        date = Operations.getDate()
-        self.__createLabel(date)
 
     def __openDialogInput(self, title, message):
         inputData = askstring(title, message)
         if inputData:
             return inputData
 
+    def __reloadFrame(self):
+        if self.__frameExists:
+            self.__destroyFrame()
+        if not self.__frameExists:
+            self.__createFrame()
+
+    def __createLabel(self, text):
+        self.__reloadFrame()
+        label = tk.Label(self.__frame, text=text, font=('Aerial 18'))
+        label.pack()
+
+    def _showDatetime(self):
+        date = Operations.getDate()
+        self.__createLabel(date)
+
     def _buildLstTree(self):
+        self.__reloadFrame()
         columns = ("#1", "#2", "#3")
         lstTree = ttk.Treeview(self.__frame, show="headings", columns=columns)
         scrollbar = ttk.Scrollbar(self.__frame, orient=tk.VERTICAL, command=lstTree.yview)
@@ -96,7 +114,6 @@ class App(tk.Tk):
         lstTree.heading("#1", text="Path")
         lstTree.heading("#2", text="Type")
         lstTree.heading("#3", text="Suffix")
-        lstTree.configure(yscroll=scrollbar.set)
 
         path = self.__openDialogInput(
             title="LST command",
@@ -107,14 +124,34 @@ class App(tk.Tk):
         for item in Operations.getLst(path):
             items.append(item)
             lstTree.insert("", tk.END, values=item)
-        self.__frameExists = True
 
-    def __createLabel(self, text):
-        if not self.__frameExists:
-            self.__showFrame()
-        label = tk.Label(self.__frame, text=text, font=('Aerial 18'))
-        label.pack()
+    def _createDir(self):
+        path = self.__openDialogInput(
+            title="Creating Directory",
+            message="Input path for new directory"
+        )
+        try:
+            Operations.createDir(path)
+        except FileExistsError:
+            messagebox.showwarning(
+                title="Creating Directory",
+                message=F"Directory with name <{path}> already exists"
+            )
 
-    def __deleteLabel(self):
-        global label
-        label.pack_forget()
+    def _touch(self):
+        path = self.__openDialogInput(
+            title="Creating Directory",
+            message="Input path for new directory"
+        )
+        try:
+            Operations.createDir(path)
+        except FileExistsError:
+            answer = messagebox.askyesno(
+                title="Touching file",
+                message=F"File with name <{path}> already exists.\nOverwrite file?"
+            )
+            if answer:
+                ...
+        except PathExistsAsDirectoryException:
+            ...
+
