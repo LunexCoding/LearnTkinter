@@ -1,5 +1,6 @@
 from pathlib import Path
 from datetime import datetime
+from helpers.fileSystem import FileSystem
 
 
 class Operations:
@@ -11,14 +12,11 @@ class Operations:
     @staticmethod
     def getLst(path):
         path = Path(path)
-        for item in path.glob('**/*'):
-            item = Path(item)
-            typeItem = "file" if item.is_file() else "dir"
-            yield [item, typeItem, item.suffix]
+        return FileSystem.listDir(path)
 
     @staticmethod
-    def createDir():
-        ...
+    def createDir(path):
+        Path(path).mkdir()
 
     @staticmethod
     def touch():
