@@ -1,6 +1,10 @@
 from pathlib import Path
 from datetime import datetime
 from helpers.fileSystem import FileSystem
+from helpers.fileSystemExceptions import (
+    PathNotFoundException,
+    PathExistsAsDirectoryException
+)
 
 
 class Operations:
@@ -16,16 +20,22 @@ class Operations:
 
     @staticmethod
     def createDir(path):
-        Path(path).mkdir()
+        return FileSystem.makeDir(path)
 
     @staticmethod
-    def touch():
-        ...
+    def touch(path, wipe=False):
+        return FileSystem.touch(path, wipe)
 
     @staticmethod
-    def copyFile():
-        ...
+    def copyFile(path, newPath, wipe=False):
+        if not FileSystem.exists(path):
+            print("call PathNotFoundException")
+            assert PathNotFoundException(path)
+        if FileSystem.exists(path) and FileSystem.isDir(path):
+            assert PathExistsAsDirectoryException(path)
+        return FileSystem.copyFile(path, newPath, wipe)
+
 
     @staticmethod
-    def deleteTree():
-        ...
+    def deleteTree(path):
+        return FileSystem.removeTree(path)
