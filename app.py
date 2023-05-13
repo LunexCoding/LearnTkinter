@@ -4,9 +4,11 @@ from tkinter.simpledialog import askstring
 from tkinter import messagebox
 
 from operations import Operations
-
+from helpers.fileSystem import FileSystem
 from helpers.fileSystemExceptions import (
     PathExistsAsDirectoryException,
+    PathExistsException,
+    PathNotFoundException
 )
 
 
@@ -55,7 +57,7 @@ class App(tk.Tk):
             text="Copy file",
             width=20
         )
-        self.buttonCopyFile['command'] = Operations.copyFile
+        self.buttonCopyFile['command'] = self._copyFile
         self.buttonCopyFile.pack()
 
         # Button Delete Tree
@@ -63,7 +65,7 @@ class App(tk.Tk):
             text="Delete Tree",
             width=20
         )
-        self.buttonDeleteTree['command'] = Operations.deleteTree
+        self.buttonDeleteTree['command'] = self._deleteTree
         self.buttonDeleteTree.pack()
 
     def __setFrameExistsStatus(self, status):
@@ -78,13 +80,13 @@ class App(tk.Tk):
         if self.__frameExists:
             for widget in self.__frame.winfo_children():
                 widget.destroy()
-            print("rem")
             self.__setFrameExistsStatus(False)
 
     def __openDialogInput(self, title, message):
         inputData = askstring(title, message)
         if inputData:
             return inputData
+        return
 
     def __reloadFrame(self):
         if self.__frameExists:
@@ -119,39 +121,98 @@ class App(tk.Tk):
             title="LST command",
             message="Enter the path to the target folder"
         )
-
-        items = []
-        for item in Operations.getLst(path):
-            items.append(item)
-            lstTree.insert("", tk.END, values=item)
+        if path:
+            items = []
+            for item in Operations.getLst(path):
+                items.append(item)
+                lstTree.insert("", tk.END, values=item)
 
     def _createDir(self):
         path = self.__openDialogInput(
             title="Creating Directory",
             message="Input path for new directory"
         )
-        try:
-            Operations.createDir(path)
-        except FileExistsError:
-            messagebox.showwarning(
-                title="Creating Directory",
-                message=F"Directory with name <{path}> already exists"
-            )
+        if path:
+            try:
+                Operations.createDir(path)
+            except PathExistsException:
+                messagebox.showwarning(
+                    title="Creating Directory",
+                    message=F"Directory with name <{path}> already exists"
+                )
 
     def _touch(self):
         path = self.__openDialogInput(
             title="Creating Directory",
             message="Input path for new directory"
         )
-        try:
-            Operations.createDir(path)
-        except FileExistsError:
-            answer = messagebox.askyesno(
-                title="Touching file",
-                message=F"File with name <{path}> already exists.\nOverwrite file?"
-            )
-            if answer:
-                ...
-        except PathExistsAsDirectoryException:
-            ...
+        if path:
+            try:
+                Operations.touch(path)
+            except PathExistsException:
+                wipe = messagebox.askyesno(
+                    title="Touching file",
+                    message=F"File with name <{path}> already exists.\nOverwrite file?"
+                )
+                if wipe:
+                    Operations.touch(path, wipe)
+            except PathExistsAsDirectoryException:
+                messagebox.showerror(
+                    title="Touching file",
+                    message=F"File with name <{path}> already exists as directory."
+                )
 
+    def _copyFile(self):
+        path = self.__openDialogInput(
+            title="Copy File",
+            message="Input path for file to copy"
+        )
+        if path:
+            try:
+                if not FileSystem.exists(path):
+                    raise PathNotFoundException(path)
+                if FileSystem.exists(path) and FileSystem.isDir(path):
+                    raise PathExistsAsDirectoryException(path)
+                newPath = self.__openDialogInput(
+                    title="Copy File",
+                    message="Input path for copy file"
+                )
+                if newPath:
+                    try:
+                        if FileSystem.exists(newPath) and FileSystem.isDir(newPath):
+                            raise PathExistsAsDirectoryException(newPath)
+                        if FileSystem.exists(newPath):
+                            raise PathExistsException(newPath)
+                        Operations.copyFile(path, newPath)
+                    except PathExistsAsDirectoryException:
+                        messagebox.showerror(
+                            title="Copy File",
+                            message=F"File with name <{newPath}> already exists as directory."
+                        )
+                    except PathExistsException:
+                        wipe = messagebox.askyesno(
+                            title="Copy File",
+                            message=F"File with name <{newPath}> already exists.\nOverwrite file?"
+                        )
+                        if wipe:
+                            Operations.copyFile(path, newPath, wipe)
+            except PathNotFoundException:
+                print("PathNotFoundException")
+                messagebox.showerror(
+                    title="Copy File",
+                    message=F"File with name <{path}> not found."
+                )
+            except PathExistsAsDirectoryException:
+                print("PathExistsAsDirectoryException")
+                messagebox.showerror(
+                    title="Copy File",
+                    message=F"File with name <{path}> already exists as directory."
+                )
+
+    def _deleteTree(self):
+        path = self.__openDialogInput(
+            title="Delete Tree",
+            message="Input path for deleting Tree"
+        )
+        if path:
+            Operations.deleteTree(path)
