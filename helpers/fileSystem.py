@@ -1,4 +1,5 @@
 import os
+import shutil
 from pathlib import Path
 from helpers.fileSystemExceptions import (
     IsNotEmptyException,
@@ -16,15 +17,32 @@ class FileSystem:
         pass
 
     @staticmethod
-    def create(path, wipe=False):
+    def touch(path, wipe=False):
         path = Path(path)
         if path.exists() and path.is_dir():
             raise PathExistsAsDirectoryException(path)
+        if path.exists() and path.is_file() and wipe is False:
+            raise PathExistsException(path)
         if not isinstance(wipe, bool):
             raise TypeException("wipe", type(wipe).__name__, bool.__name__)
         path.open(mode="a").close()
         if wipe is True:
             os.truncate(str(path), 0)
+        return True
+
+    @staticmethod
+    def copyFile(path, newPath, wipe=False):
+        path = Path(path)
+        newPath = Path(newPath)
+        if not path.exists():
+            raise PathNotFoundException(path)
+        if path.exists() and path.is_dir():
+            raise PathExistsAsDirectoryException(path)
+        if newPath.exists() and newPath.is_file() and wipe is False:
+            raise PathExistsException
+        if newPath.exists() and path.is_dir():
+            raise PathExistsAsDirectoryException(path)
+        shutil.copy(path, newPath)
         return True
 
     @staticmethod
@@ -37,8 +55,24 @@ class FileSystem:
         return path.stem if suffix is False else path.name
 
     @staticmethod
-    def listDir(path):
-        return list(Path(path).glob("*"))
+    def getFileSuffix(path):
+        path = Path(path)
+        if not path.exists():
+            raise PathNotFoundException(path)
+        if path.exists() and path.is_dir():
+            raise PathExistsAsDirectoryException(path)
+        return path.suffix
+
+    @classmethod
+    def listDir(cls, path):
+        if not path.exists():
+            raise PathNotFoundException(path)
+        if path.exists() and path.is_file():
+            raise PathExistsAsFileException(path)
+        for file in list(Path(path).glob("**/*")):
+            type = "file" if cls.isFile(file) else "dir"
+            suffix = cls.getFileSuffix(file) if cls.isFile(file) else "-"
+            yield [file, type, suffix]
 
     @staticmethod
     def isFile(path):
