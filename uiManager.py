@@ -1,21 +1,19 @@
-from tkinter import Tk
-from mainWindow import MainWindow
+
 from event import Event
 
 
 class UIManager:
-    def __init__(self):
-        self.__window = MainWindow()
+    # атрибуты класса, были в конструкторе
+    onButtonShowDateClicked = Event()
+    onButtonListDirClicked = Event()
+    onButtonCreateDirClicked = Event()
+    onButtonTouchClicked = Event()
+    onButtonCopyFileClicked = Event()
+    onButtonDeleteTreeClicked = Event()
 
-        # Создаем события
-        self.onButtonShowDateClicked = Event()
-        self.onButtonListDirClicked = Event()
-        self.onButtonCreateDirClicked = Event()
-        self.onButtonTouchClicked = Event()
-        self.onButtonCopyFileClicked = Event()
-        self.onButtonDeleteTreeClicked = Event()
+    def __init__(self, window):
+        self.__window = window
 
-        # Подписываемся на события окна
         self.__window.onButtonShowDateClicked += self._onButtonShowDateClicked
         self.__window.onButtonListDirClicked += self._onButtonListDirClicked
         self.__window.onButtonCreateDirClicked += self._onButtonCreateDirClicked
@@ -26,14 +24,18 @@ class UIManager:
     def run(self):
         self.__window.mainloop()
 
-    def _onButtonShowDateClicked(self):
-        self.onButtonShowDateClicked.trigger()
+    @staticmethod
+    def _onButtonShowDateClicked():
+        print("UI call")
+        UIManager.onButtonShowDateClicked.trigger()
 
-    def _onButtonListDirClicked(self):
-        self.onButtonListDirClicked.trigger()
+    @staticmethod
+    def _onButtonListDirClicked():
+        print("UI call")
+        UIManager.onButtonListDirClicked.trigger()
 
     def _onButtonCreateDirClicked(self):
-        self.onButtonCreateDirClicked.trigger()
+        UIManager.onButtonCreateDirClicked.trigger()
 
     def _onButtonTouchClicked(self):
         self.onButtonTouchClicked.trigger()

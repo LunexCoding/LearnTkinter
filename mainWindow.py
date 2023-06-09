@@ -4,12 +4,15 @@ from customtkinter import (
     BOTTOM,
     LEFT,
     CENTER,
+    END,
+    NSEW,
     X,
     Y,
     set_appearance_mode,
     set_default_color_theme,
-    CTkFont
+    CTkFont,
 )
+from CTkTable import CTkTable
 
 from event import Event
 from widgets.frame import Frame
@@ -25,9 +28,7 @@ class MainWindow(CTk):
     onButtonCopyFileClicked = Event()
     onButtonDeleteTreeClicked = Event()
 
-    onListDirValidationPassed = Event()
-
-    def __init__(self, title="Students SQL", geometry="600x600"):
+    def __init__(self, title="File System Operations", geometry="600x600"):
         super().__init__()
         set_appearance_mode("dark")
         set_default_color_theme("blue")
@@ -81,14 +82,16 @@ class MainWindow(CTk):
         label.pack()
         self.__tabView.set("Output")
 
+    def displayFilesTable(self, path):
+        ...
+
     def __buttonListDirClicked(self):
         self.__formFrame.reload(anchor=CENTER, expand=True)
         form = FormWithOneFiled(self.__formFrame, "Enter directory path", "path")
         def onFormFinished():
-            print(form.isValid, "mainWindow.py")
             if form.isValid:
                 print('form "List dir clicked" is valid')
-                MainWindow.onListDirValidationPassed.trigger()
+                self.__onButtonListDirClicked()  # было MainWindow.onButtonListDirClicked.trigger()
 
         form.onFinishEvent += onFormFinished
         form.show()
@@ -96,10 +99,12 @@ class MainWindow(CTk):
 
     @staticmethod
     def __onButtonShowDateClicked():
+        print("call window")
         MainWindow.onButtonShowDateClicked.trigger()
 
     @staticmethod
     def __onButtonListDirClicked():
+        print('call window')
         MainWindow.onButtonListDirClicked.trigger()
 
     @staticmethod
