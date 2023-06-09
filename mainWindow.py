@@ -1,0 +1,119 @@
+from customtkinter import (
+    CTk,
+    BOTH,
+    BOTTOM,
+    LEFT,
+    CENTER,
+    X,
+    Y,
+    set_appearance_mode,
+    set_default_color_theme,
+    CTkFont
+)
+
+from event import Event
+from widgets.frame import Frame
+from widgets.tabView import TabView
+from widgets.forms import FormWithOneFiled
+
+
+class MainWindow(CTk):
+    onButtonShowDateClicked = Event()
+    onButtonListDirClicked = Event()
+    onButtonCreateDirClicked = Event()
+    onButtonTouchClicked = Event()
+    onButtonCopyFileClicked = Event()
+    onButtonDeleteTreeClicked = Event()
+
+    onListDirValidationPassed = Event()
+
+    def __init__(self, title="Students SQL", geometry="600x600"):
+        super().__init__()
+        set_appearance_mode("dark")
+        set_default_color_theme("blue")
+        self.title(title)
+        self.geometry(geometry)
+        self.minsize(500, 300)
+        self._createUIEelements()
+
+    def _createUIEelements(self):
+        self.__mainFrame = self.__createFrame(self)
+        self.__buttonsFrame = self.__createFrame(self.__mainFrame, fg_color="green")
+
+        self.__showDateButton = self.__buttonsFrame.createButton('Show date', self.__onButtonShowDateClicked)
+        self.__listDirButton = self.__buttonsFrame.createButton('List dir', self.__buttonListDirClicked)
+        self.__createDirButton = self.__buttonsFrame.createButton('Create dir', self.__onButtonCreateDirClicked)
+        self.__touchButton = self.__buttonsFrame.createButton('Touch file', self.__onButtonTouchClicked)
+        self.__copyFileButton = self.__buttonsFrame.createButton('Copy file', self.__onButtonCopyFileClicked)
+        self.__deleteTreeButton = self.__buttonsFrame.createButton('Delete tree', self.__onButtonDeleteTreeClicked)
+        self.__showDateButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__listDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__createDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__touchButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__copyFileButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__deleteTreeButton.pack(pady=[0, 0], fill=BOTH, expand=True)
+
+        self.__footerFrame = self.__createFrame(self, fg_color="blue")
+        self.__copyrightLabel = self.__footerFrame.createLabel("Copyright LunexCoding",
+                                                               font=CTkFont("Helvetica", 18, "bold"))
+        self.__copyrightLabel.pack(side=LEFT, padx=25)
+
+        self.__tabView = self.__createTabView(self.__mainFrame, fg_color="red")
+        self.__tabView.add("Input")
+        self.__tabView.add("Output")
+        self.__formFrame = self.__tabView.createFrame("Input", fg_color="green")
+        self.__dataFrame = self.__tabView.createFrame("Output", fg_color="green")
+
+        self.__buttonsFrame.show(fill=Y, side=LEFT, ipadx=20)
+        self.__footerFrame.show(fill=X, side=BOTTOM)
+        self.__mainFrame.show(anchor=CENTER, fill=BOTH, expand=True)
+        self.__tabView.show(anchor=CENTER, fill=BOTH, padx=[30, 20], pady=[0, 20], expand=True)
+
+    def __createFrame(self, master, **kwargs):
+        return Frame(master, **kwargs)
+
+    def __createTabView(self, master, **kwargs):
+        return TabView(master, **kwargs)
+
+    def displayDatetime(self, datetime):
+        self.__dataFrame.reload(anchor=CENTER, expand=True)
+        label = self.__dataFrame.createLabel(datetime, font=CTkFont("Helvetica", 18, "bold"))
+        label.pack()
+        self.__tabView.set("Output")
+
+    def __buttonListDirClicked(self):
+        self.__formFrame.reload(anchor=CENTER, expand=True)
+        form = FormWithOneFiled(self.__formFrame, "Enter directory path", "path")
+        def onFormFinished():
+            print(form.isValid, "mainWindow.py")
+            if form.isValid:
+                print('form "List dir clicked" is valid')
+                MainWindow.onListDirValidationPassed.trigger()
+
+        form.onFinishEvent += onFormFinished
+        form.show()
+        self.__tabView.set("Input")
+
+    @staticmethod
+    def __onButtonShowDateClicked():
+        MainWindow.onButtonShowDateClicked.trigger()
+
+    @staticmethod
+    def __onButtonListDirClicked():
+        MainWindow.onButtonListDirClicked.trigger()
+
+    @staticmethod
+    def __onButtonCreateDirClicked():
+        MainWindow.onButtonCreateDirClicked.trigger()
+
+    @staticmethod
+    def __onButtonTouchClicked():
+        MainWindow.onButtonTouchClicked.trigger()
+
+    @staticmethod
+    def __onButtonCopyFileClicked():
+        MainWindow.onButtonCopyFileClicked.trigger()
+
+    @staticmethod
+    def __onButtonDeleteTreeClicked():
+        MainWindow.onButtonDeleteTreeClicked.trigger()
