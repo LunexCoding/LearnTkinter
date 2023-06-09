@@ -1,6 +1,7 @@
 from helpers.customCalendar import CustomCalendar
 from uiManager import UIManager
 from mainWindow import MainWindow
+from operations import Operations
 
 
 class App:
@@ -22,8 +23,14 @@ class App:
         print("app call")
         self.__window.displayDatetime(CustomCalendar.getDatetimeNow())
 
-    def _onButtonListDirClicked(self):
+    def _onButtonListDirClicked(self, path):
         print("app call")
+        items = [
+            ["Path", "Type", "Suffix"]
+        ]
+        for item in Operations.getLst(path):
+            items.append(item)
+        self.__window.displayFilesTable(items)
 
     def _onButtonCreateDirClicked(self):
         print("onButtonCreateDirClicked")

@@ -30,9 +30,9 @@ class UIManager:
         UIManager.onButtonShowDateClicked.trigger()
 
     @staticmethod
-    def _onButtonListDirClicked():
+    def _onButtonListDirClicked(path):
         print("UI call")
-        UIManager.onButtonListDirClicked.trigger()
+        UIManager.onButtonListDirClicked.trigger(path)
 
     def _onButtonCreateDirClicked(self):
         UIManager.onButtonCreateDirClicked.trigger()

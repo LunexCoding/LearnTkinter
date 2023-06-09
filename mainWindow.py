@@ -4,15 +4,12 @@ from customtkinter import (
     BOTTOM,
     LEFT,
     CENTER,
-    END,
-    NSEW,
     X,
     Y,
     set_appearance_mode,
     set_default_color_theme,
-    CTkFont,
+    CTkFont
 )
-from CTkTable import CTkTable
 
 from event import Event
 from widgets.frame import Frame
@@ -79,19 +76,22 @@ class MainWindow(CTk):
     def displayDatetime(self, datetime):
         self.__dataFrame.reload(anchor=CENTER, expand=True)
         label = self.__dataFrame.createLabel(datetime, font=CTkFont("Helvetica", 18, "bold"))
-        label.pack()
+        label.show(anchor=CENTER, fill=BOTH, expand=True)
         self.__tabView.set("Output")
 
-    def displayFilesTable(self, path):
-        ...
+    def displayFilesTable(self, values):
+        self.__dataFrame.reload(anchor=CENTER, fill=BOTH, expand=True)
+        table = self.__dataFrame.createTable(values, hover=True)
+        table.pack(anchor=CENTER, fill=BOTH, expand=True)
+        self.__tabView.set("Output")
 
     def __buttonListDirClicked(self):
         self.__formFrame.reload(anchor=CENTER, expand=True)
         form = FormWithOneFiled(self.__formFrame, "Enter directory path", "path")
-        def onFormFinished():
+        def onFormFinished(path):
             if form.isValid:
                 print('form "List dir clicked" is valid')
-                self.__onButtonListDirClicked()  # было MainWindow.onButtonListDirClicked.trigger()
+                self.__onButtonListDirClicked(path)  # было MainWindow.onButtonListDirClicked.trigger()
 
         form.onFinishEvent += onFormFinished
         form.show()
@@ -103,9 +103,9 @@ class MainWindow(CTk):
         MainWindow.onButtonShowDateClicked.trigger()
 
     @staticmethod
-    def __onButtonListDirClicked():
+    def __onButtonListDirClicked(path):
         print('call window')
-        MainWindow.onButtonListDirClicked.trigger()
+        MainWindow.onButtonListDirClicked.trigger(path)
 
     @staticmethod
     def __onButtonCreateDirClicked():

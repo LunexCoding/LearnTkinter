@@ -29,7 +29,6 @@ class Form(Frame):
 
 
 class FormWithOneFiled(Form):
-    onFinishEvent = Event()
 
     def __init__(self, master, labelText, placeholderText):
         super(FormWithOneFiled, self).__init__(master)
@@ -45,7 +44,7 @@ class FormWithOneFiled(Form):
     def _onCommit(self):
         self.__validate()
         if self._isValid:
-            FormWithOneFiled.onFinishEvent.trigger()
+            FormWithOneFiled.onFinishEvent.trigger(self.__entry.get())
 
     def __validate(self):
         if len(self.__entry.get()) == 0:
@@ -56,7 +55,6 @@ class FormWithOneFiled(Form):
 
 
 class FormWithTwoFields(Form):
-    onFinishEvent = Event()
 
     def __init__(self, master, labelText, placeholderText):
         super(FormWithTwoFields, self).__init__(master)

@@ -1,4 +1,5 @@
 from customtkinter import CTkFrame, CTkButton, CTkEntry
+from .CTkTable import CTkTable
 
 from .label import Label
 from .widget import Widget
@@ -32,6 +33,13 @@ class Frame(Widget, CTkFrame):
     def createEntry(self, **kwargs):
         return CTkEntry(
             master=self,
+            **kwargs
+        )
+
+    def createTable(self, values, **kwargs):
+        return CTkTable(
+            master=self,
+            values=values,
             **kwargs
         )
 
