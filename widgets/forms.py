@@ -27,11 +27,14 @@ class Form(Frame):
     def isValid(self):
         return self._isValid
 
+    def delete(self):
+        Form.onFinishEvent.destroy()
+        del self
+
 
 class FormWithOneFiled(Form):
-
     def __init__(self, master, labelText, placeholderText):
-        super(FormWithOneFiled, self).__init__(master)
+        super().__init__(master)
         self.__frame = Frame(self)
         self.__buttonCommitForm = self.__frame.createButton("Commit", self._onCommit, width=300)
         self.__label = self.__frame.createLabel(labelText, width=300, anchor=W)
@@ -44,7 +47,7 @@ class FormWithOneFiled(Form):
     def _onCommit(self):
         self.__validate()
         if self._isValid:
-            FormWithOneFiled.onFinishEvent.trigger(self.__entry.get())
+            Form.onFinishEvent.trigger(self.__entry.get())
 
     def __validate(self):
         if len(self.__entry.get()) == 0:
@@ -55,16 +58,14 @@ class FormWithOneFiled(Form):
 
 
 class FormWithTwoFields(Form):
-
-    def __init__(self, master, labelText, placeholderText):
-        super(FormWithTwoFields, self).__init__(master)
-        self.__isValid = False
+    def __init__(self, master, listTextlabels, listTextPlaceholders):
+        super().__init__(master)
         self.__frame = Frame(self)
-        self.__buttonCommitForm = self.__frame.createButton("Commit", self.__validate, width=300)
-        self.__firstLabel = self.__frame.createLabel(labelText[0], width=300, anchor=W)
-        self.__firstEntry = self.__frame.createEntry(placeholder_text=placeholderText[0], width=300)
-        self.__secondLabel = self.__frame.createLabel(labelText[1], width=300, anchor=W)
-        self.__secondEntry = self.__frame.createEntry(placeholder_text=placeholderText[1], width=300)
+        self.__buttonCommitForm = self.__frame.createButton("Commit", self._onCommit, width=300)
+        self.__firstLabel = self.__frame.createLabel(listTextlabels[0], width=300, anchor=W)
+        self.__firstEntry = self.__frame.createEntry(placeholder_text=listTextPlaceholders[0], width=300)
+        self.__secondLabel = self.__frame.createLabel(listTextlabels[1], width=300, anchor=W)
+        self.__secondEntry = self.__frame.createEntry(placeholder_text=listTextPlaceholders[1], width=300)
         self.__firstLabel.pack()
         self.__firstEntry.pack(pady=[0, 10])
         self.__secondLabel.pack()
@@ -72,5 +73,24 @@ class FormWithTwoFields(Form):
         self.__buttonCommitForm.pack(pady=[20, 0])
         self.__frame.pack(anchor=CENTER, expand=True)
 
+    def _onCommit(self):
+        self.__validate()
+        if self._isValid:
+            fields = {
+                self.__firstEntry.cget('placeholder_text'): self.__firstEntry.get(),
+                self.__secondEntry.cget('placeholder_text'): self.__secondEntry.get(),
+            }
+            Form.onFinishEvent.trigger(fields)
+
     def __validate(self):
-        ...
+        if len(self.__firstEntry.get()) == 0 and len(self.__secondEntry.get()) == 0:
+            super().showErrorLabel(f"All fields must be filled")
+            self._isValid = False
+        elif len(self.__firstEntry.get()) == 0:
+            super().showErrorLabel(f"The <{self.__firstEntry.cget('placeholder_text')}> field cannot be empty")
+            self._isValid = False
+        elif len(self.__secondEntry.get()) == 0:
+            super().showErrorLabel(f"The <{self.__secondEntry.cget('placeholder_text')}> field cannot be empty")
+            self._isValid = False
+        else:
+            self._isValid = True
