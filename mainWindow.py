@@ -35,6 +35,9 @@ class MainWindow(CTk):
         self.minsize(500, 300)
         self._createUIEelements()
 
+        self.__form = None
+        self.__currentOperation = None
+
     def _createUIEelements(self):
         self.__mainFrame = self.__createFrame(self)
         self.__buttonsFrame = self.__createFrame(self.__mainFrame, fg_color="green")
@@ -43,8 +46,8 @@ class MainWindow(CTk):
         self.__listDirButton = self.__buttonsFrame.createButton('List dir', self.__buttonListDirClicked)
         self.__createDirButton = self.__buttonsFrame.createButton('Create dir', self.__buttonCreateDirClicked)
         self.__copyFileButton = self.__buttonsFrame.createButton('Copy file', self.__buttonCopyFileClicked)
-        self.__touchButton = self.__buttonsFrame.createButton('Touch file', self.__onButtonTouchClicked)
-        self.__deleteTreeButton = self.__buttonsFrame.createButton('Delete tree', self.__onButtonDeleteTreeClicked)
+        self.__touchButton = self.__buttonsFrame.createButton('Touch file', self.__buttonTouchClicked)
+        self.__deleteTreeButton = self.__buttonsFrame.createButton('Delete tree', self.__buttonDeleteTreeClicked)
         self.__showDateButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__listDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__createDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
@@ -88,6 +91,11 @@ class MainWindow(CTk):
     def __createTabView(self, master, **kwargs):
         return TabView(master, **kwargs)
 
+    def __reloadFormCallbacks(self, operation):
+        if self.__form is not None:
+            if self.__form.name != operation:
+                self.__form.clearCallbacks()
+
     def displayDatetime(self, datetime):
         self.__dataFrame.reload(anchor=CENTER, expand=True, fill=BOTH)
         label = self.__dataFrame.createLabel(datetime, font=CTkFont("Helvetica", 18, "bold"))
@@ -101,40 +109,48 @@ class MainWindow(CTk):
         self.__tabView.set("Output")
 
     def __buttonListDirClicked(self):
+        operation = "ListDir"
         self.__formFrame.reload(anchor=CENTER, expand=True)
-        form = FormWithOneFiled(
-            self.__formFrame,
-            "Enter directory path", "path"
+        self.__reloadFormCallbacks(operation)
+        self.__form = FormWithOneFiled(
+            master=self.__formFrame,
+            name=operation,
+            labelText="Enter directory path",
+            placeholderText="path"
         )
         def onFormFinished(path):
-            if form.isValid:
+            if self.__form.isValid:
                 self.__onButtonListDirClicked(path)
-            form.delete()
 
-        form.onFinishEvent += onFormFinished
-        form.show()
+        self.__form.onFinishEvent += onFormFinished
+        self.__form.show()
         self.__tabView.set("Input")
 
     def __buttonCreateDirClicked(self):
+        operation = "CreateDir"
         self.__formFrame.reload(anchor=CENTER, expand=True)
-        form = FormWithOneFiled(
-            self.__formFrame,
-            "Enter new directory path",
-            "path"
+        self.__reloadFormCallbacks(operation)
+        self.__form = FormWithOneFiled(
+            master=self.__formFrame,
+            name=operation,
+            labelText="Enter new directory path",
+            placeholderText="path"
         )
         def onFormFinished(path):
-            if form.isValid:
+            if self.__form.isValid:
                 self.__onButtonCreateDirClicked(path)
-            form.delete()
 
-        form.onFinishEvent += onFormFinished
-        form.show()
+        self.__form.onFinishEvent += onFormFinished
+        self.__form.show()
         self.__tabView.set("Input")
 
     def __buttonCopyFileClicked(self):
+        operation = "CreateDir"
         self.__formFrame.reload(anchor=CENTER, expand=True)
-        form = FormWithTwoFields(
-            self.__formFrame,
+        self.__reloadFormCallbacks(operation)
+        self.__form = FormWithTwoFields(
+            master=self.__formFrame,
+            name=operation,
             listTextlabels=[
                 "Enter copy file path",
                 "Enter new file path"
@@ -145,12 +161,49 @@ class MainWindow(CTk):
             ]
         )
         def onFormFinished(fields):
-            if form.isValid:
+            if self.__form.isValid:
                 self.__onButtonCopyFileClicked(fields)
-            form.delete()
+            self.__form.clearCallbacks()
 
-        form.onFinishEvent += onFormFinished
-        form.show()
+        self.__form.onFinishEvent += onFormFinished
+        self.__form.show()
+        self.__tabView.set("Input")
+
+    def __buttonTouchClicked(self):
+        operation = "Touch"
+        self.__formFrame.reload(anchor=CENTER, expand=True)
+        self.__reloadFormCallbacks(operation)
+        self.__form = FormWithOneFiled(
+            master=self.__formFrame,
+            name=operation,
+            labelText="Enter path",
+            placeholderText="path"
+        )
+        def onFormFinished(path):
+            if self.__form.isValid:
+                self.__onButtonTouchClicked(path)
+
+        self.__form.onFinishEvent += onFormFinished
+        self.__form.show()
+        self.__tabView.set("Input")
+
+    def __buttonDeleteTreeClicked(self):
+        operation = "DeleteTree"
+        self.__formFrame.reload(anchor=CENTER, expand=True)
+        self.__reloadFormCallbacks(operation)
+        self.__form = FormWithOneFiled(
+            master=self.__formFrame,
+            name=operation,
+            labelText="Enter dir path",
+            placeholderText="path"
+        )
+
+        def onFormFinished(path):
+            if self.__form.isValid:
+                self.__onButtonDeleteTreeClicked(path)
+
+        self.__form.onFinishEvent += onFormFinished
+        self.__form.show()
         self.__tabView.set("Input")
 
     @staticmethod
@@ -170,9 +223,9 @@ class MainWindow(CTk):
         MainWindow.onButtonCopyFileClicked.trigger(fields)
 
     @staticmethod
-    def __onButtonTouchClicked():
-        MainWindow.onButtonTouchClicked.trigger()
+    def __onButtonTouchClicked(path):
+        MainWindow.onButtonTouchClicked.trigger(path)
 
     @staticmethod
-    def __onButtonDeleteTreeClicked():
-        MainWindow.onButtonDeleteTreeClicked.trigger()
+    def __onButtonDeleteTreeClicked(path):
+        MainWindow.onButtonDeleteTreeClicked.trigger(path)

@@ -3,14 +3,12 @@ from uiManager import UIManager
 from mainWindow import MainWindow
 from helpers.fileSystem import FileSystem
 from helpers.fileSystemExceptions import (
-    IsNotEmptyException,
     PathExistsException,
     PathExistsAsFileException,
     PathExistsAsDirectoryException,
     PathNotFoundException,
     IsNotDirectoryException
 )
-
 
 
 class App:
@@ -71,7 +69,6 @@ class App:
                 self._onButtonCreateDirClicked(path, parents=True)
 
     def _onButtonCopyFileClicked(self, fields):
-        print(fields, "app")
         path = fields["file path"]
         newPath = fields["new file path"]
         try:
@@ -96,8 +93,43 @@ class App:
                 message=error
             )
 
-    def _onButtonTouchClicked(self):
-        print("onButtonTouchClicked")
+    def _onButtonTouchClicked(self, path, wipe=False):
+        try:
+            FileSystem.touch(path, wipe)
+            self.__window.showCheckmarkMessageBox(
+                title="File Touching",
+                message=f"File <{path}> touched successfully"
+            )
+        except PathExistsAsDirectoryException as error:
+            self.__window.showErrorMessageBox(
+                title="File Touching",
+                message=error
+            )
+        except PathExistsException as error:
+            response = self.__window.showWarningMessageBox(
+                title="File Touching",
+                message=f"{error}\n"
+                        f"Truncate a file?",
+                option_1="Cancel",
+                option_2="Retry",
+            )
+            if response == "Retry":
+                self._onButtonTouchClicked(path, wipe=True)
 
-    def _onButtonDeleteTreeClicked(self):
-        print("onButtonDeleteTreeClicked")
+    def _onButtonDeleteTreeClicked(self, path):
+        try:
+            FileSystem.removeTree(path)
+            self.__window.showCheckmarkMessageBox(
+                title="Dir Deleting",
+                message=f"Dir <{path}> deleted successfully"
+            )
+        except PathNotFoundException as error:
+            self.__window.showErrorMessageBox(
+                title="File Touching",
+                message=error
+            )
+        except PathExistsAsFileException as error:
+            self.__window.showErrorMessageBox(
+                title="File Touching",
+                message=error
+            )

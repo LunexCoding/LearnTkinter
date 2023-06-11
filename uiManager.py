@@ -40,10 +40,9 @@ class UIManager:
         UIManager.onButtonCopyFileClicked.trigger(fields)
 
     @staticmethod
-    def _onButtonTouchClicked():
-        UIManager.onButtonTouchClicked.trigger()
-
+    def _onButtonTouchClicked(path):
+        UIManager.onButtonTouchClicked.trigger(path)
 
     @staticmethod
-    def _onButtonDeleteTreeClicked():
-        UIManager.onButtonDeleteTreeClicked.trigger()
+    def _onButtonDeleteTreeClicked(path):
+        UIManager.onButtonDeleteTreeClicked.trigger(path)

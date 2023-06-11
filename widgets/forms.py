@@ -7,9 +7,10 @@ from .frame import Frame
 class Form(Frame):
     onFinishEvent = Event()
 
-    def __init__(self, master):
+    def __init__(self, master, name):
         super().__init__(master)
         self._errorLabel = self.createLabel(text_color="red")
+        self._name = name
         self._isValid = False
 
     def __validate(self):
@@ -27,14 +28,18 @@ class Form(Frame):
     def isValid(self):
         return self._isValid
 
-    def delete(self):
-        Form.onFinishEvent.destroy()
-        del self
+    @property
+    def name(self):
+        return self._name
+
+    @staticmethod
+    def clearCallbacks():
+        Form.onFinishEvent.clear()
 
 
 class FormWithOneFiled(Form):
-    def __init__(self, master, labelText, placeholderText):
-        super().__init__(master)
+    def __init__(self, master, name, labelText, placeholderText):
+        super().__init__(master, name)
         self.__frame = Frame(self)
         self.__buttonCommitForm = self.__frame.createButton("Commit", self._onCommit, width=300)
         self.__label = self.__frame.createLabel(labelText, width=300, anchor=W)
@@ -58,8 +63,8 @@ class FormWithOneFiled(Form):
 
 
 class FormWithTwoFields(Form):
-    def __init__(self, master, listTextlabels, listTextPlaceholders):
-        super().__init__(master)
+    def __init__(self, master, name, listTextlabels, listTextPlaceholders):
+        super().__init__(master, name)
         self.__frame = Frame(self)
         self.__buttonCommitForm = self.__frame.createButton("Commit", self._onCommit, width=300)
         self.__firstLabel = self.__frame.createLabel(listTextlabels[0], width=300, anchor=W)
