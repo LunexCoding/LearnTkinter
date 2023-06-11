@@ -13,7 +13,7 @@ class Event:
             return callback(*args, **kwargs)
 
     def clear(self):
-        self.__callbacks = []
+        self.__callbacks.clear()
 
     def destroy(self):
         self.clear()
