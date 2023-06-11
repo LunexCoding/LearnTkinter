@@ -10,11 +10,12 @@ from customtkinter import (
     set_default_color_theme,
     CTkFont
 )
+from CTkMessagebox import CTkMessagebox
 
 from event import Event
 from widgets.frame import Frame
 from widgets.tabView import TabView
-from widgets.forms import FormWithOneFiled
+from widgets.forms import FormWithOneFiled, FormWithTwoFields
 
 
 class MainWindow(CTk):
@@ -40,15 +41,15 @@ class MainWindow(CTk):
 
         self.__showDateButton = self.__buttonsFrame.createButton('Show date', self.__onButtonShowDateClicked)
         self.__listDirButton = self.__buttonsFrame.createButton('List dir', self.__buttonListDirClicked)
-        self.__createDirButton = self.__buttonsFrame.createButton('Create dir', self.__onButtonCreateDirClicked)
+        self.__createDirButton = self.__buttonsFrame.createButton('Create dir', self.__buttonCreateDirClicked)
+        self.__copyFileButton = self.__buttonsFrame.createButton('Copy file', self.__buttonCopyFileClicked)
         self.__touchButton = self.__buttonsFrame.createButton('Touch file', self.__onButtonTouchClicked)
-        self.__copyFileButton = self.__buttonsFrame.createButton('Copy file', self.__onButtonCopyFileClicked)
         self.__deleteTreeButton = self.__buttonsFrame.createButton('Delete tree', self.__onButtonDeleteTreeClicked)
         self.__showDateButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__listDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__createDirButton.pack(pady=[0, 20], fill=BOTH, expand=True)
-        self.__touchButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__copyFileButton.pack(pady=[0, 20], fill=BOTH, expand=True)
+        self.__touchButton.pack(pady=[0, 20], fill=BOTH, expand=True)
         self.__deleteTreeButton.pack(pady=[0, 0], fill=BOTH, expand=True)
 
         self.__footerFrame = self.__createFrame(self, fg_color="blue")
@@ -67,6 +68,20 @@ class MainWindow(CTk):
         self.__mainFrame.show(anchor=CENTER, fill=BOTH, expand=True)
         self.__tabView.show(anchor=CENTER, fill=BOTH, padx=[30, 20], pady=[0, 20], expand=True)
 
+    @staticmethod
+    def showCheckmarkMessageBox(title, message, **kwargs):
+        CTkMessagebox(title=title, message=message, icon="check", **kwargs)
+
+    @staticmethod
+    def showErrorMessageBox(title, message, **kwargs):
+        CTkMessagebox(title=title, message=message, icon="cancel", **kwargs)
+
+    @staticmethod
+    def showWarningMessageBox(title, message, **kwargs):
+        message = CTkMessagebox(title=title, message=message, icon="warning", **kwargs)
+        response = message.get()
+        return response
+
     def __createFrame(self, master, **kwargs):
         return Frame(master, **kwargs)
 
@@ -74,7 +89,7 @@ class MainWindow(CTk):
         return TabView(master, **kwargs)
 
     def displayDatetime(self, datetime):
-        self.__dataFrame.reload(anchor=CENTER, expand=True)
+        self.__dataFrame.reload(anchor=CENTER, expand=True, fill=BOTH)
         label = self.__dataFrame.createLabel(datetime, font=CTkFont("Helvetica", 18, "bold"))
         label.show(anchor=CENTER, fill=BOTH, expand=True)
         self.__tabView.set("Output")
@@ -87,11 +102,52 @@ class MainWindow(CTk):
 
     def __buttonListDirClicked(self):
         self.__formFrame.reload(anchor=CENTER, expand=True)
-        form = FormWithOneFiled(self.__formFrame, "Enter directory path", "path")
+        form = FormWithOneFiled(
+            self.__formFrame,
+            "Enter directory path", "path"
+        )
         def onFormFinished(path):
             if form.isValid:
-                print('form "List dir clicked" is valid')
-                self.__onButtonListDirClicked(path)  # было MainWindow.onButtonListDirClicked.trigger()
+                self.__onButtonListDirClicked(path)
+            form.delete()
+
+        form.onFinishEvent += onFormFinished
+        form.show()
+        self.__tabView.set("Input")
+
+    def __buttonCreateDirClicked(self):
+        self.__formFrame.reload(anchor=CENTER, expand=True)
+        form = FormWithOneFiled(
+            self.__formFrame,
+            "Enter new directory path",
+            "path"
+        )
+        def onFormFinished(path):
+            if form.isValid:
+                self.__onButtonCreateDirClicked(path)
+            form.delete()
+
+        form.onFinishEvent += onFormFinished
+        form.show()
+        self.__tabView.set("Input")
+
+    def __buttonCopyFileClicked(self):
+        self.__formFrame.reload(anchor=CENTER, expand=True)
+        form = FormWithTwoFields(
+            self.__formFrame,
+            listTextlabels=[
+                "Enter copy file path",
+                "Enter new file path"
+            ],
+            listTextPlaceholders=[
+                "file path",
+                "new file path"
+            ]
+        )
+        def onFormFinished(fields):
+            if form.isValid:
+                self.__onButtonCopyFileClicked(fields)
+            form.delete()
 
         form.onFinishEvent += onFormFinished
         form.show()
@@ -99,25 +155,23 @@ class MainWindow(CTk):
 
     @staticmethod
     def __onButtonShowDateClicked():
-        print("call window")
         MainWindow.onButtonShowDateClicked.trigger()
 
     @staticmethod
     def __onButtonListDirClicked(path):
-        print('call window')
         MainWindow.onButtonListDirClicked.trigger(path)
 
     @staticmethod
-    def __onButtonCreateDirClicked():
-        MainWindow.onButtonCreateDirClicked.trigger()
+    def __onButtonCreateDirClicked(path):
+        MainWindow.onButtonCreateDirClicked.trigger(path)
+
+    @staticmethod
+    def __onButtonCopyFileClicked(fields):
+        MainWindow.onButtonCopyFileClicked.trigger(fields)
 
     @staticmethod
     def __onButtonTouchClicked():
         MainWindow.onButtonTouchClicked.trigger()
-
-    @staticmethod
-    def __onButtonCopyFileClicked():
-        MainWindow.onButtonCopyFileClicked.trigger()
 
     @staticmethod
     def __onButtonDeleteTreeClicked():
