@@ -31,16 +31,18 @@ class FileSystem:
         return True
 
     @staticmethod
-    def copyFile(path, newPath, wipe=False):
+    def copyFile(path, newPath):
         path = Path(path)
         newPath = Path(newPath)
+        print(path.exists(), "filesystem")
         if not path.exists():
             raise PathNotFoundException(path)
         if path.exists() and path.is_dir():
             raise PathExistsAsDirectoryException(path)
-        if newPath.exists() and newPath.is_file() and wipe is False:
-            raise PathExistsException
-        if newPath.exists() and path.is_dir():
+
+        if newPath.exists() and newPath.is_file():
+            raise PathExistsException(path)
+        if newPath.exists() and newPath.is_dir():
             raise PathExistsAsDirectoryException(path)
         shutil.copy(path, newPath)
         return True
@@ -65,6 +67,7 @@ class FileSystem:
 
     @classmethod
     def listDir(cls, path):
+        path = Path(path)
         if not path.exists():
             raise PathNotFoundException(path)
         if path.exists() and path.is_file():
@@ -94,13 +97,16 @@ class FileSystem:
         return True
 
     @staticmethod
-    def makeDir(path, recreate=False):
+    def makeDir(path, parents=False, recreate=False):
         path = Path(path)
         if path.exists() and path.is_file():
             raise PathExistsAsFileException(path)
         if path.exists() and recreate is False:
             raise PathExistsException(path)
-        path.mkdir(exist_ok=recreate)
+        if not path.exists() and parents is False:
+            if not path.parents[0].exists() and parents is False:
+                raise PathNotFoundException(path)
+        path.mkdir(exist_ok=recreate, parents=parents)
         return True
 
     @staticmethod
