@@ -3,7 +3,6 @@ from event import Event
 
 
 class UIManager:
-    # атрибуты класса, были в конструкторе
     onButtonShowDateClicked = Event()
     onButtonListDirClicked = Event()
     onButtonCreateDirClicked = Event()
@@ -17,8 +16,8 @@ class UIManager:
         self.__window.onButtonShowDateClicked += self._onButtonShowDateClicked
         self.__window.onButtonListDirClicked += self._onButtonListDirClicked
         self.__window.onButtonCreateDirClicked += self._onButtonCreateDirClicked
-        self.__window.onButtonTouchClicked += self._onButtonTouchClicked
         self.__window.onButtonCopyFileClicked += self._onButtonCopyFileClicked
+        self.__window.onButtonTouchClicked += self._onButtonTouchClicked
         self.__window.onButtonDeleteTreeClicked += self._onButtonDeleteTreeClicked
 
     def run(self):
@@ -26,22 +25,25 @@ class UIManager:
 
     @staticmethod
     def _onButtonShowDateClicked():
-        print("UI call")
         UIManager.onButtonShowDateClicked.trigger()
 
     @staticmethod
     def _onButtonListDirClicked(path):
-        print("UI call")
         UIManager.onButtonListDirClicked.trigger(path)
 
-    def _onButtonCreateDirClicked(self):
-        UIManager.onButtonCreateDirClicked.trigger()
+    @staticmethod
+    def _onButtonCreateDirClicked(path):
+        UIManager.onButtonCreateDirClicked.trigger(path)
 
-    def _onButtonTouchClicked(self):
-        self.onButtonTouchClicked.trigger()
+    @staticmethod
+    def _onButtonCopyFileClicked(fields):
+        UIManager.onButtonCopyFileClicked.trigger(fields)
 
-    def _onButtonCopyFileClicked(self):
-        self.onButtonCopyFileClicked.trigger()
+    @staticmethod
+    def _onButtonTouchClicked():
+        UIManager.onButtonTouchClicked.trigger()
 
-    def _onButtonDeleteTreeClicked(self):
-        self.onButtonDeleteTreeClicked.trigger()
+
+    @staticmethod
+    def _onButtonDeleteTreeClicked():
+        UIManager.onButtonDeleteTreeClicked.trigger()
